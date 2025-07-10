@@ -1,13 +1,13 @@
 import { FC } from 'react';
 
-interface ButtonProps {
+interface SearchButtonProps {
   textContent?: string;
 }
 
-export const SearchButton: FC<ButtonProps> = ({ textContent }) => {
+export const SearchButton: FC<SearchButtonProps> = ({ textContent }) => {
   return (
     <div className="search-button">
-      <button type="button">{textContent}</button>
+      <button type="submit">{textContent}</button>
     </div>
   );
 };
