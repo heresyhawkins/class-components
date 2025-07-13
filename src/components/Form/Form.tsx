@@ -5,6 +5,7 @@ import { ResultsList } from '../ResultsList/ResultsList';
 import { PaginationControls } from '../PaginationControls/PaginationControls';
 import './Form.css';
 
+// Типы остаются без изменений
 interface INamedApiResource {
   name: string;
   url: string;
@@ -46,6 +47,8 @@ const INITIAL_PAGINATION: PaginationState = {
 
 const LIMIT_ELEMENT = 20;
 
+const SEARCH_TERM_KEY = 'pokemon_ability_search_term';
+
 export const Form: FC = () => {
   const [data, setData] = useState<IAbility[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -54,17 +57,33 @@ export const Form: FC = () => {
   const [filteredResults, setFilteredResults] = useState<IAbility[]>([]);
   const [pagination, setPagination] = useState<PaginationState>(INITIAL_PAGINATION);
 
+  useEffect(() => {
+    const savedSearchTerm = localStorage.getItem(SEARCH_TERM_KEY);
+    if (savedSearchTerm !== null) {
+      setSearchTerm(savedSearchTerm);
+    }
+  }, []);
+
   const fetchData = async (offset = 0, limit = LIMIT_ELEMENT) => {
     try {
       setLoading(true);
       const url = `https://pokeapi.co/api/v2/ability?offset=${offset}&limit=${limit}`;
       const response = await fetch(url);
-      if (!response.ok) throw new Error('Failed to load data');
+
+      if (!response.ok) {
+        const errorText = `Failed to load data. Status: ${response.status}`;
+        setError(errorText);
+        throw new Error(errorText);
+      }
+
       const result = (await response.json()) as INamedAPIResourceList;
 
       const abilitiesPromises = result.results.map(async (item) => {
         const abilityResponse = await fetch(item.url);
-        if (!abilityResponse.ok) throw new Error(`Failed to load ability: ${item.name}`);
+        if (!abilityResponse.ok) {
+          const errorText = `Failed to load ability: ${item.name}. Status: ${abilityResponse.status}`;
+          throw new Error(errorText);
+        }
         return abilityResponse.json() as Promise<IPokeAPIAbilityResponse>;
       });
 
@@ -78,8 +97,13 @@ export const Form: FC = () => {
       setData(mappedData);
       setFilteredResults(mappedData);
       setPagination((prev) => ({ ...prev, total: result.count }));
+      setError(null);
     } catch (err) {
-      setError('Failed to load data.');
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unknown error occurred.');
+      }
       console.error(err);
     } finally {
       setLoading(false);
@@ -99,6 +123,8 @@ export const Form: FC = () => {
     e.preventDefault();
     const term = searchTerm.trim().toLowerCase();
 
+    localStorage.setItem(SEARCH_TERM_KEY, term);
+
     if (term) {
       const filtered = data.filter((item) => item.name.toLowerCase().includes(term));
       setFilteredResults(filtered);
@@ -113,7 +139,11 @@ export const Form: FC = () => {
         <SearchInput
           placeholder="Write Something"
           value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          onChange={(e) => {
+            const newValue = e.target.value;
+            setSearchTerm(newValue);
+            localStorage.setItem(SEARCH_TERM_KEY, newValue);
+          }}
         />
         <SearchButton textContent="Search" />
       </div>
