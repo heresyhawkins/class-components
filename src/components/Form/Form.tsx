@@ -5,7 +5,6 @@ import { ResultsList } from '../ResultsList/ResultsList';
 import { PaginationControls } from '../PaginationControls/PaginationControls';
 import './Form.css';
 
-// Типы остаются без изменений
 interface INamedApiResource {
   name: string;
   url: string;
