@@ -1,36 +1,43 @@
-import React from 'react';
+import { Component } from 'react';
+import { Pokemon } from '../../types/PokemonTypes';
 import './ResultsList.css';
 
-interface IAbilityEffectEntry {
-  effect: string;
-  language: {
-    name: string;
-  };
+interface PokemonListProps {
+  pokemons: Pokemon[];
 }
 
-interface IAbility {
-  name: string;
-  effect_entries: IAbilityEffectEntry[];
-}
+class PokemonList extends Component<PokemonListProps> {
+  render() {
+    const { pokemons } = this.props;
 
-interface ResultsListProps {
-  results: IAbility[];
-}
+    if (!pokemons.length) {
+      return <p>No Pokémon found.</p>;
+    }
 
-export const ResultsList: React.FC<ResultsListProps> = ({ results }) => {
-  return (
-    <ul className="results-list">
-      {results.map((item, index) => {
-        const englishEffect =
-          item.effect_entries.find((entry) => entry.language.name === 'en')?.effect ?? 'Nothing.';
-
-        return (
-          <li key={index} className="result-item">
-            <strong>{item.name} </strong>
-            <span>{englishEffect}</span>
+    return (
+      <ul className="pokemon-list">
+        {pokemons.map((pokemon) => (
+          <li key={pokemon.id} className="pokemon-card">
+            <img
+              src={pokemon.sprites.front_default ?? ''}
+              alt={pokemon.name}
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = ' https://via.placeholder.com/100 ';
+              }}
+              className="pokemon-image"
+            />
+            <h3 className="pokemon-name">{pokemon.name}</h3>
+            <div className="pokemon-types">
+              <strong>Types:</strong> {pokemon.types.map((t) => t.type.name).join(', ') || 'None'}
+            </div>
+            <div className="pokemon-stats">
+              <strong>HP:</strong> {pokemon.stats[0]?.base_stat || 0}
+            </div>
           </li>
-        );
-      })}
-    </ul>
-  );
-};
+        ))}
+      </ul>
+    );
+  }
+}
+
+export default PokemonList;

@@ -1,7 +1,6 @@
 import './App.css';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
-
-import { Form } from './components/Form/Form';
+import Form from './components/Form/Form';
 
 function App() {
   return (
@@ -20,7 +19,9 @@ const ErrorTriggerButton = () => {
 
   return (
     <div>
-      <button onClick={throwError}>Throw Error</button>
+      <button type="button" onClick={throwError}>
+        Throw Error
+      </button>
     </div>
   );
 };
