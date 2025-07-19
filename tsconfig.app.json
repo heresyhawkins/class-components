@@ -9,6 +9,7 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "sourceMap": true,
+    "types": ["vitest/globals", "node"],
 
     /* Bundler mode */
     "moduleResolution": "bundler",
