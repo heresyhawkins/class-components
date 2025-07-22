@@ -17,6 +17,7 @@ export default tseslint.config(
       prettierConfig,
     ],
     files: ['**/*.{ts,tsx}'],
+    ignores: ['**/*.test.tsx'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',

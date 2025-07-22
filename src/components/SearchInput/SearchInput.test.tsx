@@ -4,8 +4,9 @@ import userEvent from '@testing-library/user-event';
 import { SearchInput } from './SearchInput';
 
 describe('SearchInput Component', () => {
-  it('should render input with provided text content', () => {
+  it('should render input with provided placeholder', () => {
     render(<SearchInput placeholder="Write Something" />);
+    expect(screen.getByPlaceholderText('Write Something')).toBeInTheDocument();
   });
 
   it('should call onChange when input value changes', async () => {
@@ -14,8 +15,6 @@ describe('SearchInput Component', () => {
     render(<SearchInput value="" placeholder="Search..." onChange={handleChange} />);
 
     const input = screen.getByPlaceholderText('Search...');
-
-    expect(input).toBeInTheDocument();
 
     await userEvent.type(input, 'hello');
 
