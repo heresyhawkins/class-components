@@ -32,7 +32,9 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
             {this.state.error?.toString()}
             <br />
           </details>
-          <button onClick={() => this.setState({ hasError: false })}>Try again</button>
+          <button type="button" onClick={() => this.setState({ hasError: false })}>
+            Try again
+          </button>
         </div>
       );
     }

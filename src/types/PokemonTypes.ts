@@ -76,8 +76,8 @@ export interface Pokemon {
   past_types: PokemonTypePast[];
   past_abilities: PokemonAbilityPast[];
   sprites: PokemonSprites;
-  cries: PokemonCries;
-  species: NamedAPIResource;
+  cries: PokemonCries | undefined;
+  species: NamedAPIResource | undefined;
   stats: PokemonStat[];
   types: PokemonType[];
 }
