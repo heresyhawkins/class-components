@@ -15,9 +15,9 @@ export default function PokemonDetails() {
   useEffect(() => {
     if (!name) return;
 
-    setLoading(true);
-    setError(null);
     setPokemon(null);
+    setError(null);
+    setLoading(true);
 
     fetch(`https://pokeapi.co/api/v2/pokemon/${name.toLowerCase()}`)
       .then((res) => {
