@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1753191548890" clover="3.2.0">
-  <project timestamp="1753191548890" name="All files">
-    <metrics statements="272" coveredstatements="206" conditionals="37" coveredconditionals="33" methods="26" coveredmethods="22" elements="335" coveredelements="261" complexity="0" loc="272" ncloc="272" packages="8" files="11" classes="11"/>
+<coverage generated="1753618587828" clover="3.2.0">
+  <project timestamp="1753618587828" name="All files">
+    <metrics statements="274" coveredstatements="206" conditionals="39" coveredconditionals="34" methods="28" coveredmethods="23" elements="341" coveredelements="263" complexity="0" loc="274" ncloc="274" packages="10" files="13" classes="13"/>
     <package name="src">
       <metrics statements="42" coveredstatements="40" conditionals="4" coveredconditionals="4" methods="4" coveredmethods="3"/>
       <file name="App.tsx" path="C:\Users\User\Desktop\class-components\src\App.tsx">
@@ -323,6 +323,20 @@
         <line num="11" count="4" type="stmt"/>
         <line num="12" count="4" type="stmt"/>
         <line num="14" count="4" type="stmt"/>
+      </file>
+    </package>
+    <package name="src.pages">
+      <metrics statements="0" coveredstatements="0" conditionals="1" coveredconditionals="1" methods="1" coveredmethods="1"/>
+      <file name="Home.tsx" path="C:\Users\User\Desktop\class-components\src\pages\Home.tsx">
+        <metrics statements="0" coveredstatements="0" conditionals="1" coveredconditionals="1" methods="1" coveredmethods="1"/>
+      </file>
+    </package>
+    <package name="src.routes">
+      <metrics statements="2" coveredstatements="0" conditionals="1" coveredconditionals="0" methods="1" coveredmethods="0"/>
+      <file name="AppRouter.tsx" path="C:\Users\User\Desktop\class-components\src\routes\AppRouter.tsx">
+        <metrics statements="2" coveredstatements="0" conditionals="1" coveredconditionals="0" methods="1" coveredmethods="0"/>
+        <line num="1" count="0" type="cond" truecount="0" falsecount="1"/>
+        <line num="3" count="0" type="stmt"/>
       </file>
     </package>
     <package name="src.types">

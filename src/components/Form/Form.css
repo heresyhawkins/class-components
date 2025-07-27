@@ -1,3 +1,41 @@
 .form-action {
-  padding: 10px;
+  width: 100%;
+
+  margin: 0 auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.button-form {
+  display: flex;
+  gap: 8px;
+  padding: 16px;
+  border-bottom: 1px solid #eee;
+}
+
+.results-form {
+  padding: 20px;
+}
+
+.results-form h2 {
+  margin-bottom: 16px;
+  font-size: 1.2em;
+  color: #333;
+}
+
+.error-box {
+  background: #fee;
+  border: 1px solid #fcc;
+  padding: 12px;
+  border-radius: 8px;
+  color: #c33;
+  text-align: center;
+}
+
+.no-results {
+  text-align: center;
+  color: #999;
+  font-style: italic;
+  margin: 20px 0;
 }
