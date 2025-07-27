@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-misused-promises */
 import './PokemonDetails.scss';
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
@@ -11,13 +10,14 @@ export default function PokemonDetails() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const close = () => navigate(-1);
+  const close = () => void navigate(-1);
 
   useEffect(() => {
     if (!name) return;
 
     setLoading(true);
     setError(null);
+    setPokemon(null);
 
     fetch(`https://pokeapi.co/api/v2/pokemon/${name.toLowerCase()}`)
       .then((res) => {
@@ -38,7 +38,7 @@ export default function PokemonDetails() {
   return (
     <div className="details-panel" onClick={close}>
       <div className="details-content" onClick={(e) => e.stopPropagation()}>
-        <button onClick={close} className="close-button">
+        <button type="button" onClick={close} className="close-button">
           Close
         </button>
 
