@@ -11,6 +11,8 @@ export default function PokemonDetails() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const close = () => navigate(-1);
+
   useEffect(() => {
     if (!name) return;
 
@@ -33,21 +35,6 @@ export default function PokemonDetails() {
       });
   }, [name]);
 
-  const close = () => navigate(-1);
-
-  if (error) {
-    return (
-      <div className="details-panel" onClick={close}>
-        <div className="details-content" onClick={(e) => e.stopPropagation()}>
-          <button onClick={close} className="close-button">
-            Close
-          </button>
-          <p>Error: {error}</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="details-panel" onClick={close}>
       <div className="details-content" onClick={(e) => e.stopPropagation()}>
@@ -55,7 +42,9 @@ export default function PokemonDetails() {
           Close
         </button>
 
-        {loading ? (
+        {error ? (
+          <p>Error: {error}</p>
+        ) : loading ? (
           <p>Loading...</p>
         ) : pokemon ? (
           <div>

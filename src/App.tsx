@@ -1,13 +1,11 @@
 import './App.css';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
-import Form from './components/Form/Form';
 
 function App() {
   return (
     <>
       <ErrorBoundary>
         <ErrorTriggerButton />
-        <Form />
       </ErrorBoundary>
     </>
   );

@@ -1,8 +1,9 @@
+// src/routes/AppRouter.tsx
 import { createBrowserRouter } from 'react-router-dom';
 import Home from '../pages/Home';
+import PokemonDetails from '../pages/PokemonDetails';
 import About from '../pages/About';
 import NotFound from '../pages/NotFound';
-import PokemonDetails from '../pages/PokemonDetails';
 
 export const router = createBrowserRouter([
   {
