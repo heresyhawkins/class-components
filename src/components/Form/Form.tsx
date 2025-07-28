@@ -7,11 +7,11 @@ import { Pokemon, APIResourceList, NamedAPIResource } from '../../types/PokemonT
 import PokemonList from '../ResultsList/ResultsList';
 import PaginationControls from '../PaginationControls/PaginationControls';
 import { Link } from 'react-router-dom';
+import { useSearchFromLocalStorage } from '../../hooks/useSearchFromLocalStorage';
 
 const POKEMON_LIMIT_PER_PAGE = 20;
 const DEFAULT_PAGE = 1;
 const MIN_PAGE = 1;
-const SEARCH_STORAGE_KEY = 'pokemon_search_term';
 const BASE_POKEMON_URL = 'https://pokeapi.co/api/v2/pokemon';
 
 const calculateOffset = (page: number): number => (page - 1) * POKEMON_LIMIT_PER_PAGE;
@@ -21,7 +21,8 @@ export default function Form() {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const savedSearchTerm = localStorage.getItem(SEARCH_STORAGE_KEY) ?? '';
+  const [searchTerm, setSearchTerm] = useSearchFromLocalStorage();
+
   const urlPage = parseInt(searchParams.get('page') ?? String(DEFAULT_PAGE), 10);
   const initialPage = isNaN(urlPage) || urlPage < MIN_PAGE ? MIN_PAGE : urlPage;
   const initialOffset = calculateOffset(initialPage);
@@ -30,7 +31,6 @@ export default function Form() {
     data: Pokemon[];
     loading: boolean;
     error: string | null;
-    searchTerm: string;
     filteredResults: Pokemon[];
     pagination: {
       offset: number;
@@ -41,7 +41,6 @@ export default function Form() {
     data: [],
     loading: true,
     error: null,
-    searchTerm: savedSearchTerm,
     filteredResults: [],
     pagination: {
       offset: initialOffset,
@@ -50,7 +49,11 @@ export default function Form() {
     },
   });
 
-  const fetchData = async (offset = 0, limit = POKEMON_LIMIT_PER_PAGE) => {
+  const fetchData = async (
+    offset = 0,
+    limit = POKEMON_LIMIT_PER_PAGE,
+    currentSearchTerm = searchTerm
+  ) => {
     try {
       setState((prev) => ({ ...prev, loading: true }));
 
@@ -68,22 +71,20 @@ export default function Form() {
 
       const pokemonData = await Promise.all(pokemonPromises);
 
-      setState((prev) => {
-        const filtered = prev.searchTerm
-          ? pokemonData.filter((p) =>
-              p.name.toLowerCase().includes(prev.searchTerm.trim().toLowerCase())
-            )
-          : pokemonData;
+      const filtered = currentSearchTerm
+        ? pokemonData.filter((p) =>
+            p.name.toLowerCase().includes(currentSearchTerm.trim().toLowerCase())
+          )
+        : pokemonData;
 
-        return {
-          ...prev,
-          data: pokemonData,
-          filteredResults: filtered,
-          pagination: { ...prev.pagination, total: result.count },
-          error: null,
-          loading: false,
-        };
-      });
+      setState((prev) => ({
+        ...prev,
+        pokemonData,
+        filteredResults: filtered,
+        pagination: { ...prev.pagination, total: result.count },
+        error: null,
+        loading: false,
+      }));
     } catch (err) {
       console.error(err);
       setState((prev) => ({
@@ -95,18 +96,18 @@ export default function Form() {
   };
 
   useEffect(() => {
-    void fetchData(state.pagination.offset, POKEMON_LIMIT_PER_PAGE);
-  }, [state.pagination.offset]);
+    void fetchData(state.pagination.offset, POKEMON_LIMIT_PER_PAGE, searchTerm);
+  }, [state.pagination.offset, searchTerm]);
 
   useEffect(() => {
     const currentPage = calculatePage(state.pagination.offset);
     const params = new URLSearchParams();
 
-    if (state.searchTerm) params.set('search', state.searchTerm);
+    if (searchTerm) params.set('search', searchTerm);
     params.set('page', String(currentPage));
 
     setSearchParams(params, { replace: true });
-  }, [state.pagination.offset, state.searchTerm, setSearchParams]);
+  }, [state.pagination.offset, searchTerm, setSearchParams]);
 
   useEffect(() => {
     const page = parseInt(searchParams.get('page') ?? '1', 10);
@@ -122,9 +123,7 @@ export default function Form() {
   }, [searchParams]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const term = e.target.value;
-    setState((prev) => ({ ...prev, searchTerm: term }));
-    localStorage.setItem(SEARCH_STORAGE_KEY, term);
+    setSearchTerm(e.target.value);
   };
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
@@ -132,9 +131,10 @@ export default function Form() {
     const currentPage = calculatePage(state.pagination.offset);
     const params = new URLSearchParams();
 
-    if (state.searchTerm) params.set('search', state.searchTerm);
+    if (searchTerm) params.set('search', searchTerm);
     params.set('page', String(currentPage));
 
+    void fetchData(state.pagination.offset, POKEMON_LIMIT_PER_PAGE, searchTerm);
     void navigate(`/page/${currentPage}?${params.toString()}`);
   };
 
@@ -142,7 +142,7 @@ export default function Form() {
     const newPage = calculatePage(newOffset);
     const params = new URLSearchParams();
 
-    if (state.searchTerm) params.set('search', state.searchTerm);
+    if (searchTerm) params.set('search', searchTerm);
     params.set('page', String(newPage));
 
     void navigate(`/page/${newPage}?${params.toString()}`);
@@ -157,13 +157,13 @@ export default function Form() {
     const currentPage = calculatePage(state.pagination.offset);
     const params = new URLSearchParams();
 
-    if (state.searchTerm) params.set('search', state.searchTerm);
+    if (searchTerm) params.set('search', searchTerm);
     params.set('page', String(currentPage));
 
     void navigate(`/page/${currentPage}/pokemon/${name}`);
   };
 
-  const { loading, error, filteredResults, searchTerm } = state;
+  const { loading, error, filteredResults } = state;
 
   return (
     <form className="form-action" onSubmit={handleSearch}>
