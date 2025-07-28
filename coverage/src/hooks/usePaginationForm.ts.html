@@ -23,30 +23,30 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">90% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>0/20</span>
+                <span class='fraction'>18/20</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">87.5% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/1</span>
+                <span class='fraction'>7/8</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>0/1</span>
+                <span class='fraction'>2/2</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">0% </span>
+                <span class="strong">90% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/20</span>
+                <span class='fraction'>18/20</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -87,54 +87,54 @@
 <a name='L22'></a><a href='#L22'>22</a>
 <a name='L23'></a><a href='#L23'>23</a>
 <a name='L24'></a><a href='#L24'>24</a>
-<a name='L25'></a><a href='#L25'>25</a></td><td class="line-coverage quiet"><span class="cline-any cline-no">&nbsp;</span>
+<a name='L25'></a><a href='#L25'>25</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">7x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">7x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js"><span class="cstat-no" title="statement not covered" >import { useEffect, useState } from 'react';<span class="fstat-no" title="function not covered" ><span class="branch-0 cbranch-no" title="branch not covered" ></span></span></span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-yes">7x</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">import { useEffect, useState } from 'react';
 &nbsp;
-<span class="cstat-no" title="statement not covered" >export function usePaginationFromUrl() {</span>
-<span class="cstat-no" title="statement not covered" >  const [page, setPage] = useState(1);</span>
+export function usePaginationFromUrl() {
+  const [page, setPage] = useState(1);
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  useEffect(() =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    const params = new URLSearchParams(window.location.search);</span>
-<span class="cstat-no" title="statement not covered" >    const p = parseInt(params.get('page') ?? '1', 10);</span>
-<span class="cstat-no" title="statement not covered" >    setPage(isNaN(p) || p &lt; 1 ? 1 : p);</span>
-<span class="cstat-no" title="statement not covered" >  }, []);</span>
+  useEffect(() =&gt; {
+    const params = new URLSearchParams(window.location.search);
+    const p = parseInt(params.get('page') ?? '1', 10);
+    setPage(isNaN(p) || p &lt; 1 ? 1 : p);
+  }, []);
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  const updatePage = (newPage: number) =&gt; {</span>
-<span class="cstat-no" title="statement not covered" >    const params = new URLSearchParams(window.location.search);</span>
-<span class="cstat-no" title="statement not covered" >    if (newPage &gt; 1) {</span>
-<span class="cstat-no" title="statement not covered" >      params.set('page', newPage.toString());</span>
-<span class="cstat-no" title="statement not covered" >    } else {</span>
+  const updatePage = (newPage: number) =&gt; {
+    const params = new URLSearchParams(window.location.search);
+    if (newPage &gt; 1) {
+      params.set('page', newPage.toString());
+<span class="branch-0 cbranch-no" title="branch not covered" >    } else {</span>
 <span class="cstat-no" title="statement not covered" >      params.delete('page');</span>
 <span class="cstat-no" title="statement not covered" >    }</span>
-<span class="cstat-no" title="statement not covered" >    window.history.replaceState({}, '', `${window.location.pathname}?${params}`);</span>
-<span class="cstat-no" title="statement not covered" >    setPage(newPage);</span>
-<span class="cstat-no" title="statement not covered" >  };</span>
+    window.history.replaceState({}, '', `${window.location.pathname}?${params}`);
+    setPage(newPage);
+  };
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  return { page, updatePage };</span>
-<span class="cstat-no" title="statement not covered" >}</span>
+  return { page, updatePage };
+}
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -142,7 +142,7 @@
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-07-28T17:43:05.652Z
+                at 2025-07-28T18:19:08.358Z
             </div>
         <script src="../../prettify.js"></script>
         <script>
