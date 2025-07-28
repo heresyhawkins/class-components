@@ -1,4 +1,5 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { SearchInput } from '../SearchInput/SearchInput';
 import { SearchButton } from '../SearchButton/SearchButton';
 import './Form.css';
@@ -16,56 +17,42 @@ const BASE_POKEMON_URL = 'https://pokeapi.co/api/v2/pokemon';
 const calculateOffset = (page: number): number => (page - 1) * POKEMON_LIMIT_PER_PAGE;
 const calculatePage = (offset: number): number => Math.floor(offset / POKEMON_LIMIT_PER_PAGE) + 1;
 
-interface FormProps {
-  navigate?: (path: string) => void;
-  searchParams?: URLSearchParams;
-}
+export default function Form() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
 
-interface FormState {
-  data: Pokemon[];
-  loading: boolean;
-  error: string | null;
-  searchTerm: string;
-  filteredResults: Pokemon[];
-  pagination: {
-    offset: number;
-    limit: number;
-    total: number | null;
-  };
-}
+  const savedSearchTerm = localStorage.getItem(SEARCH_STORAGE_KEY) ?? '';
+  const urlPage = parseInt(searchParams.get('page') ?? String(DEFAULT_PAGE), 10);
+  const initialPage = isNaN(urlPage) || urlPage < MIN_PAGE ? MIN_PAGE : urlPage;
+  const initialOffset = calculateOffset(initialPage);
 
-const INITIAL_PAGINATION = {
-  offset: calculateOffset(DEFAULT_PAGE),
-  limit: POKEMON_LIMIT_PER_PAGE,
-  total: null as number | null,
-};
-
-class Form extends Component<FormProps, FormState> {
-  constructor(props: FormProps) {
-    super(props);
-    const savedSearchTerm = localStorage.getItem(SEARCH_STORAGE_KEY) ?? '';
-    const urlPage = this.getPageFromParams(props.searchParams);
-    const offset = calculateOffset(urlPage);
-
-    this.state = {
-      data: [] as Pokemon[],
-      loading: true,
-      error: null,
-      searchTerm: savedSearchTerm,
-      filteredResults: [] as Pokemon[],
-      pagination: { ...INITIAL_PAGINATION, offset },
+  const [state, setState] = useState<{
+    data: Pokemon[];
+    loading: boolean;
+    error: string | null;
+    searchTerm: string;
+    filteredResults: Pokemon[];
+    pagination: {
+      offset: number;
+      limit: number;
+      total: number | null;
     };
-  }
+  }>({
+    data: [],
+    loading: true,
+    error: null,
+    searchTerm: savedSearchTerm,
+    filteredResults: [],
+    pagination: {
+      offset: initialOffset,
+      limit: POKEMON_LIMIT_PER_PAGE,
+      total: null,
+    },
+  });
 
-  private getPageFromParams = (searchParams?: URLSearchParams): number => {
-    const pageParam = searchParams?.get('page');
-    const page = parseInt(pageParam ?? String(DEFAULT_PAGE), 10);
-    return isNaN(page) || page < MIN_PAGE ? MIN_PAGE : page;
-  };
-
-  fetchData = async (offset = 0, limit = POKEMON_LIMIT_PER_PAGE) => {
+  const fetchData = async (offset = 0, limit = POKEMON_LIMIT_PER_PAGE) => {
     try {
-      this.setState({ loading: true });
+      setState((prev) => ({ ...prev, loading: true }));
 
       const url = `${BASE_POKEMON_URL}?offset=${offset}&limit=${limit}`;
       const response = await fetch(url);
@@ -81,163 +68,137 @@ class Form extends Component<FormProps, FormState> {
 
       const pokemonData = await Promise.all(pokemonPromises);
 
-      this.setState((prevState) => ({
-        data: pokemonData,
-        filteredResults: prevState.searchTerm
+      setState((prev) => {
+        const filtered = prev.searchTerm
           ? pokemonData.filter((p) =>
-              p.name.toLowerCase().includes(prevState.searchTerm.trim().toLowerCase())
+              p.name.toLowerCase().includes(prev.searchTerm.trim().toLowerCase())
             )
-          : pokemonData,
-        pagination: {
-          ...prevState.pagination,
-          total: result.count,
-        },
-        error: null,
-      }));
+          : pokemonData;
+
+        return {
+          ...prev,
+          data: pokemonData,
+          filteredResults: filtered,
+          pagination: { ...prev.pagination, total: result.count },
+          error: null,
+          loading: false,
+        };
+      });
     } catch (err) {
       console.error(err);
-      this.setState({
+      setState((prev) => ({
+        ...prev,
         error: 'Failed to load Pokémon data.',
         loading: false,
-      });
-    } finally {
-      this.setState({ loading: false });
+      }));
     }
   };
 
-  componentDidMount() {
-    const { offset, limit } = this.state.pagination;
-    void this.fetchData(offset, limit);
-  }
+  useEffect(() => {
+    void fetchData(state.pagination.offset, POKEMON_LIMIT_PER_PAGE);
+  }, [state.pagination.offset]);
 
-  componentDidUpdate(prevProps: FormProps) {
-    const { searchParams } = this.props;
-    const prevPage = this.getPageFromParams(prevProps.searchParams);
-    const currentPage = this.getPageFromParams(searchParams);
+  useEffect(() => {
+    const currentPage = calculatePage(state.pagination.offset);
+    const params = new URLSearchParams();
 
-    if (currentPage !== prevPage) {
-      const offset = calculateOffset(currentPage);
+    if (state.searchTerm) params.set('search', state.searchTerm);
+    params.set('page', String(currentPage));
 
-      this.setState(
-        (prevState) => ({
-          pagination: { ...prevState.pagination, offset },
-        }),
-        () => {
-          void this.fetchData(offset, POKEMON_LIMIT_PER_PAGE);
-        }
-      );
+    setSearchParams(params, { replace: true });
+  }, [state.pagination.offset, state.searchTerm, setSearchParams]);
+
+  useEffect(() => {
+    const page = parseInt(searchParams.get('page') ?? '1', 10);
+    const validPage = isNaN(page) || page < MIN_PAGE ? MIN_PAGE : page;
+    const offset = calculateOffset(validPage);
+
+    if (offset !== state.pagination.offset) {
+      setState((prev) => ({
+        ...prev,
+        pagination: { ...prev.pagination, offset },
+      }));
     }
+  }, [searchParams]);
 
-    const prevSearch = prevProps.searchParams?.get('search');
-    const currentSearch = searchParams?.get('search');
-
-    if (currentSearch !== prevSearch) {
-      const { searchTerm } = this.state;
-      const filtered = this.state.data.filter((p) =>
-        p.name.toLowerCase().includes(searchTerm.trim().toLowerCase())
-      );
-      this.setState({ filteredResults: filtered });
-    }
-  }
-
-  handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const term = e.target.value;
-    this.setState({ searchTerm: term });
+    setState((prev) => ({ ...prev, searchTerm: term }));
     localStorage.setItem(SEARCH_STORAGE_KEY, term);
   };
 
-  handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const { navigate } = this.props;
-    const { searchTerm } = this.state;
-    const currentPage = calculatePage(this.state.pagination.offset);
-
+    const currentPage = calculatePage(state.pagination.offset);
     const params = new URLSearchParams();
-    if (searchTerm) params.set('search', searchTerm);
+
+    if (state.searchTerm) params.set('search', state.searchTerm);
     params.set('page', String(currentPage));
 
-    navigate?.(`/page/${currentPage}?${params.toString()}`);
+    void navigate(`/page/${currentPage}?${params.toString()}`);
   };
 
-  handlePageChange = (newOffset: number) => {
-    const { navigate } = this.props;
-    const { searchTerm } = this.state;
+  const handlePageChange = (newOffset: number) => {
     const newPage = calculatePage(newOffset);
-
     const params = new URLSearchParams();
-    if (searchTerm) params.set('search', searchTerm);
+
+    if (state.searchTerm) params.set('search', state.searchTerm);
     params.set('page', String(newPage));
 
-    navigate?.(`/page/${newPage}?${params.toString()}`);
+    void navigate(`/page/${newPage}?${params.toString()}`);
 
-    this.setState(
-      (prevState) => ({
-        pagination: { ...prevState.pagination, offset: newOffset },
-      }),
-      () => {
-        void this.fetchData(newOffset, POKEMON_LIMIT_PER_PAGE);
-      }
-    );
+    setState((prev) => ({
+      ...prev,
+      pagination: { ...prev.pagination, offset: newOffset },
+    }));
   };
 
-  handlePokemonClick = (name: string) => {
-    const { navigate, searchParams } = this.props;
-    const { searchTerm } = this.state;
-
-    if (!navigate) {
-      console.error('navigate is not available');
-      return;
-    }
-
-    const currentPage = this.getPageFromParams(searchParams);
-
+  const handlePokemonClick = (name: string) => {
+    const currentPage = calculatePage(state.pagination.offset);
     const params = new URLSearchParams();
-    if (searchTerm) params.set('search', searchTerm);
+
+    if (state.searchTerm) params.set('search', state.searchTerm);
     params.set('page', String(currentPage));
 
-    navigate(`/page/${currentPage}/pokemon/${name}`);
+    void navigate(`/page/${currentPage}/pokemon/${name}`);
   };
 
-  render() {
-    const { loading, error, filteredResults, pagination, searchTerm } = this.state;
+  const { loading, error, filteredResults, searchTerm } = state;
 
-    return (
-      <form className="form-action" onSubmit={this.handleSearch}>
-        <div className="button-form">
-          <SearchInput
-            placeholder="Write Something"
-            value={searchTerm}
-            onChange={this.handleInputChange}
-          />
-          <SearchButton textContent="Search" />
-        </div>
+  return (
+    <form className="form-action" onSubmit={handleSearch}>
+      <div className="button-form">
+        <SearchInput
+          placeholder="Write Something"
+          value={searchTerm}
+          onChange={handleInputChange}
+        />
+        <SearchButton textContent="Search" />
+      </div>
 
-        <div className="results-form">
-          <h2>Results:</h2>
-          <Link to="/about" className="about-link">
-            About Us
-          </Link>
+      <div className="results-form">
+        <h2>Results:</h2>
+        <Link to="/about" className="about-link">
+          About Us
+        </Link>
 
-          {loading ? (
-            <p>Loading...</p>
-          ) : error ? (
-            <div className="error-box">
-              <p>{error}</p>
-            </div>
-          ) : filteredResults.length > 0 ? (
-            <>
-              <PokemonList pokemons={filteredResults} onPokemonClick={this.handlePokemonClick} />
-              <PaginationControls pagination={pagination} onPageChange={this.handlePageChange} />
-            </>
-          ) : (
-            <div className="no-results">
-              <p>No results found.</p>
-            </div>
-          )}
-        </div>
-      </form>
-    );
-  }
+        {loading ? (
+          <p>Loading...</p>
+        ) : error ? (
+          <div className="error-box">
+            <p>{error}</p>
+          </div>
+        ) : filteredResults.length > 0 ? (
+          <>
+            <PokemonList pokemons={filteredResults} onPokemonClick={handlePokemonClick} />
+            <PaginationControls pagination={state.pagination} onPageChange={handlePageChange} />
+          </>
+        ) : (
+          <div className="no-results">
+            <p>No results found.</p>
+          </div>
+        )}
+      </div>
+    </form>
+  );
 }
-
-export default Form;

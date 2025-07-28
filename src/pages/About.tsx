@@ -5,7 +5,9 @@ export default function About() {
   return (
     <div className="about-page">
       <h1>About</h1>
-      <p>Author: heresyhawkins</p>
+      <p>
+        Author: <a href="https://github.com/heresyhawkins">heresyhawkins</a>
+      </p>
       <p>
         <a href="https://rs.school/react/" target="_blank" rel="noreferrer">
           RS School React Course
