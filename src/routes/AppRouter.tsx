@@ -1,4 +1,3 @@
-// src/routes/AppRouter.tsx
 import { createBrowserRouter } from 'react-router-dom';
 import Home from '../pages/Home';
 import PokemonDetails from '../pages/PokemonDetails';
