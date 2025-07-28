@@ -1,29 +1,29 @@
 import './App.css';
+import { useState } from 'react';
 import ErrorBoundary from './components/ErrorBoundary/ErrorBoundary';
 import Form from './components/Form/Form';
 
 function App() {
-  return (
-    <>
-      <ErrorBoundary>
-        <ErrorTriggerButton />
-        <Form />
-      </ErrorBoundary>
-    </>
-  );
-}
-const ErrorTriggerButton = () => {
-  const throwError = () => {
+  const [hasError, setHasError] = useState(false);
+
+  if (hasError) {
     throw new Error('Test error thrown intentionally!');
+  }
+
+  const triggerError = () => {
+    setHasError(true);
   };
 
   return (
-    <div>
-      <button type="button" onClick={throwError}>
-        Throw Error
-      </button>
-    </div>
+    <ErrorBoundary>
+      <div>
+        <button type="button" onClick={triggerError}>
+          Throw Error
+        </button>
+      </div>
+      <Form />
+    </ErrorBoundary>
   );
-};
+}
 
 export default App;

@@ -1,49 +1,42 @@
-import { useEffect, useState } from 'react';
+// components/ErrorBoundary/ErrorBoundary.tsx
+import { Component, ErrorInfo, ReactNode } from 'react';
 
-export const useErrorBoundary = () => {
-  const [hasError, setHasError] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-
-  const triggerError = (error: Error) => {
-    setError(error);
-    setHasError(true);
-    console.error('Error caught by boundary:', error);
-  };
-
-  const resetError = () => {
-    setHasError(false);
-    setError(null);
-  };
-
-  return { hasError, error, triggerError, resetError };
-};
-interface ErrorBoundaryProps {
-  children: React.ReactNode;
+interface Props {
+  children: ReactNode;
 }
 
-export default function ErrorBoundary({ children }: ErrorBoundaryProps) {
-  const { hasError, error, resetError } = useErrorBoundary();
+interface State {
+  hasError: boolean;
+  error: Error | null;
+}
 
-  useEffect(() => {
-    const errorHandler = (event: ErrorEvent) => {
-      console.error(event);
-    };
-
-    window.addEventListener('error', errorHandler);
-    return () => window.removeEventListener('error', errorHandler);
-  }, []);
-
-  if (hasError) {
-    return (
-      <div className="error-fallback">
-        <h2>Something went wrong.</h2>
-        <details style={{ whiteSpace: 'pre-wrap' }}>{error?.toString()}</details>
-        <button type="button" onClick={resetError}>
-          Try again
-        </button>
-      </div>
-    );
+export default class ErrorBoundary extends Component<Props, State> {
+  constructor(props: Props) {
+    super(props);
+    this.state = { hasError: false, error: null };
   }
 
-  return <>{children}</>;
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('Error caught by boundary:', error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="error-fallback">
+          <h2>Something went wrong.</h2>
+          <details style={{ whiteSpace: 'pre-wrap' }}>{this.state.error?.toString()}</details>
+          <button type="button" onClick={() => this.setState({ hasError: false, error: null })}>
+            Try again
+          </button>
+        </div>
+      );
+    }
+
+    return this.props.children;
+  }
 }
