@@ -1,0 +1,23 @@
+.search-button {
+  display: flex;
+}
+
+.search-button button {
+  padding: 12px 20px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+.search-button button:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.search-button button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}

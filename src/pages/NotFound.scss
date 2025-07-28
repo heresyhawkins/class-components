@@ -1,0 +1,30 @@
+.not-found-page {
+  padding: 40px 20px;
+  text-align: center;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.not-found-page h1 {
+  font-size: 2em;
+  color: #c33;
+  margin-bottom: 12px;
+}
+
+.not-found-page p {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.not-found-page a {
+  padding: 10px 20px;
+  background: #007bff;
+  color: white;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.not-found-page a:hover {
+  background: #0056b3;
+}

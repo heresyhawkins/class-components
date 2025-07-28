@@ -1,92 +1,125 @@
-import { describe, it, expect, vi } from 'vitest';
+
 import { render, screen, fireEvent } from '@testing-library/react';
-import '@testing-library/jest-dom';
+import { MemoryRouter } from 'react-router-dom';
+import { describe, it, expect, vi } from 'vitest';
+import { useState } from 'react';
 import ErrorBoundary from './ErrorBoundary';
 
+vi.spyOn(console, 'error').mockImplementation(() => {});
+
+
 const Bomb = () => {
-  throw new Error('💥 KABOOM');
+  throw new Error('Kaboom!');
+};
+
+const ErrorTrigger = () => {
+  const [hasError, setHasError] = useState(false);
+  if (hasError) throw new Error('Test error in render');
+
+  return (
+    <button type="button" onClick={() => setHasError(true)}>
+      Crash me
+    </button>
+  );
+};
+
+
+const renderWithRouter = (ui: React.ReactElement) => {
+  return render(<MemoryRouter>{ui}</MemoryRouter>);
 };
 
 describe('ErrorBoundary', () => {
-  const originalError = console.error;
-
-  beforeEach(() => {
-    console.error = vi.fn();
-  });
-
-  afterEach(() => {
-    console.error = originalError;
-  });
-
-  it('should render children when there is no error', () => {
-    render(
+  it('renders children when there is no error', () => {
+    renderWithRouter(
       <ErrorBoundary>
-        <div>I am fine!</div>
+        <div data-testid="safe-child">All good</div>
       </ErrorBoundary>
     );
 
-    expect(screen.getByText('I am fine!')).toBeInTheDocument();
-    expect(screen.queryByText('Something went wrong.')).not.toBeInTheDocument();
+    expect(screen.getByTestId('safe-child')).toBeInTheDocument();
   });
 
-  it('should catch an error and render fallback UI', () => {
-    render(
+  it('catches an error thrown during rendering and shows fallback UI', () => {
+    renderWithRouter(
       <ErrorBoundary>
         <Bomb />
       </ErrorBoundary>
     );
 
-    expect(screen.getByText('Something went wrong.')).toBeInTheDocument();
-    expect(screen.getByText((content) => content.includes('💥 KABOOM'))).toBeInTheDocument();
+    expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
+    expect(screen.getByText(/Kaboom!/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /try again/i })).toBeInTheDocument();
   });
 
-  it('should log the error and errorInfo in componentDidCatch', () => {
-    const consoleSpy = console.error as jest.Mock;
-    consoleSpy.mockClear();
-
-    render(
+  it('shows error details in <details> tag', () => {
+    renderWithRouter(
       <ErrorBoundary>
         <Bomb />
       </ErrorBoundary>
     );
 
-    expect(consoleSpy).toHaveBeenCalled();
-
-    const call = consoleSpy.mock.calls[0];
-
-    expect(call[1]).toBeInstanceOf(Error);
-    expect(call[1]?.message).toBe('💥 KABOOM');
+    const details = screen.getByRole('group');
+    expect(details).toHaveTextContent('Error: Kaboom!');
   });
 
-  it('should retry rendering children after "Try again" button click', () => {
-    let shouldThrow = true;
-
-    const TestComponent = () => {
-      if (shouldThrow) {
-        throw new Error('Oops');
-      }
-      return <div>Recovered!</div>;
-    };
-
-    render(
+  it('resets the error state when "Try again" button is clicked', () => {
+    renderWithRouter(
       <ErrorBoundary>
-        <TestComponent />
+        <ErrorTrigger />
       </ErrorBoundary>
     );
 
-    expect(screen.getByText('Something went wrong.')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /crash me/i }));
+
+    expect(screen.getByText(/something went wrong/i)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /try again/i }));
+    expect(screen.getByRole('button', { name: /crash me/i })).toBeInTheDocument();
+  });
 
-    shouldThrow = false;
+  it('calls componentDidCatch with error and errorInfo', () => {
+    const mockComponentDidCatch = vi.spyOn(
+      ErrorBoundary.prototype,
+      'componentDidCatch'
+    );
 
-    render(
+    renderWithRouter(
       <ErrorBoundary>
-        <TestComponent />
+        <Bomb />
       </ErrorBoundary>
     );
 
-    expect(screen.getByText('Recovered!')).toBeInTheDocument();
+    expect(mockComponentDidCatch).toHaveBeenCalledWith(
+      expect.any(Error),
+      expect.objectContaining({
+        componentStack: expect.stringContaining('Bomb'),
+      })
+    );
+
+    mockComponentDidCatch.mockRestore();
+  });
+
+  it('does not catch errors in event handlers (expected behavior)', () => {
+    const ConsoleError = () => {
+      return (
+        <button
+          type="button"
+          onClick={() => {
+            throw new Error('Event handler error');
+          }}
+        >
+          Click me
+        </button>
+      );
+    };
+
+    renderWithRouter(
+      <ErrorBoundary>
+        <ConsoleError />
+      </ErrorBoundary>
+    );
+
+    const button = screen.getByRole('button', { name: /click me/i });
+    expect(button).toBeInTheDocument();
   });
 });

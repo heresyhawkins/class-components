@@ -1,5 +1,3 @@
-import { Component } from 'react';
-
 interface PaginationControlsProps {
   pagination: {
     offset: number;
@@ -9,43 +7,39 @@ interface PaginationControlsProps {
   onPageChange: (newOffset: number) => void;
 }
 
-class PaginationControls extends Component<PaginationControlsProps> {
-  handlePrev = () => {
-    const { offset, limit } = this.props.pagination;
+export default function PaginationControls({ pagination, onPageChange }: PaginationControlsProps) {
+  const { offset, limit, total } = pagination;
+
+  const handlePrev = () => {
     if (offset - limit >= 0) {
-      this.props.onPageChange(offset - limit);
+      onPageChange(offset - limit);
     }
   };
 
-  handleNext = () => {
-    const { offset, limit, total } = this.props.pagination;
+  const handleNext = () => {
     if (total === null || offset + limit < total) {
-      this.props.onPageChange(offset + limit);
+      onPageChange(offset + limit);
     }
   };
 
-  render() {
-    const { offset, limit, total } = this.props.pagination;
+  const currentPage = Math.floor(offset / limit) + 1;
+  const totalPages = total !== null ? Math.ceil(total / limit) : null;
 
-    return (
-      <div className="pagination-controls">
-        <button type="button" onClick={this.handlePrev} disabled={offset === 0}>
-          Previous
-        </button>
-        <span>
-          Page {Math.floor(offset / limit) + 1}{' '}
-          {total !== null ? `of ${Math.ceil(total / limit)}` : ''}
-        </span>
-        <button
-          type="button"
-          onClick={this.handleNext}
-          disabled={total !== null && offset + limit >= total}
-        >
-          Next
-        </button>
-      </div>
-    );
-  }
+  return (
+    <div className="pagination-controls">
+      <button type="button" onClick={handlePrev} disabled={offset === 0}>
+        Previous
+      </button>
+      <span>
+        Page {currentPage} {totalPages !== null ? `of ${totalPages}` : ''}
+      </span>
+      <button
+        type="button"
+        onClick={handleNext}
+        disabled={total !== null && offset + limit >= total}
+      >
+        Next
+      </button>
+    </div>
+  );
 }
-
-export default PaginationControls;

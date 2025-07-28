@@ -1,32 +1,28 @@
-import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
-import App from './App';
+import { RouterProvider } from 'react-router-dom';
+import { router } from './routes/AppRouter';
+import { describe, it, expect, vi } from 'vitest';
 
-export const renderWithProviders = (ui: React.ReactElement) => {
-  return render(ui);
-};
+vi.mock('react-dom/client', async () => {
+  const actual = await vi.importActual('react-dom/client');
+  return {
+    ...actual,
+    createRoot: vi.fn(),
+  };
+});
 
-global.ResizeObserver = class {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-};
-
-describe('App Root', () => {
-  it('should render without crashing', () => {
+describe('main.tsx', () => {
+  it('renders the app into #root with RouterProvider', async () => {
     document.body.innerHTML = '<div id="root"></div>';
 
-    const root = document.getElementById('root');
-    expect(root).not.toBeNull();
+    const mockRender = vi.fn();
+    const { createRoot } = await import('react-dom/client');
+    (createRoot as any).mockImplementation(() => ({
+      render: mockRender,
+    }));
 
-    import('./main').catch(console.error);
+    await import('./main.tsx'); 
 
-    expect(document.body).toBeTruthy();
-  });
-
-  it('should render App component', () => {
-    renderWithProviders(<App />);
-
-    expect(screen.getByRole('button', { name: /throw error/i })).toBeInTheDocument();
+    expect(createRoot).toHaveBeenCalledWith(document.getElementById('root'));
+    expect(mockRender).toHaveBeenCalledWith(<RouterProvider router={router} />);
   });
 });
