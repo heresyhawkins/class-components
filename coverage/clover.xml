@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1753726926502" clover="3.2.0">
-  <project timestamp="1753726926502" name="All files">
-    <metrics statements="467" coveredstatements="381" conditionals="81" coveredconditionals="68" methods="36" coveredmethods="29" elements="584" coveredelements="478" complexity="0" loc="467" ncloc="467" packages="12" files="20" classes="20"/>
+<coverage generated="1753726978059" clover="3.2.0">
+  <project timestamp="1753726978059" name="All files">
+    <metrics statements="467" coveredstatements="381" conditionals="80" coveredconditionals="67" methods="35" coveredmethods="28" elements="582" coveredelements="476" complexity="0" loc="467" ncloc="467" packages="12" files="19" classes="19"/>
     <package name="src">
-      <metrics statements="12" coveredstatements="12" conditionals="2" coveredconditionals="2" methods="1" coveredmethods="1"/>
-      <file name="App.tsx" path="C:\Users\User\Desktop\class-components\src\App.tsx">
-        <metrics statements="0" coveredstatements="0" conditionals="1" coveredconditionals="1" methods="1" coveredmethods="1"/>
-      </file>
+      <metrics statements="12" coveredstatements="12" conditionals="1" coveredconditionals="1" methods="0" coveredmethods="0"/>
       <file name="main.tsx" path="C:\Users\User\Desktop\class-components\src\main.tsx">
         <metrics statements="5" coveredstatements="5" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="1" count="1" type="stmt"/>
