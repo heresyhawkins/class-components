@@ -1,10 +1,8 @@
 import { render } from '@testing-library/react';
 import { ReactElement } from 'react';
-import { RouterProvider } from 'react-router-dom';
-import { router } from '../routes/AppRouter';
+import { Provider } from 'react-redux';
+import { store } from '../store';
 
-export const renderWithProviders = (_ui: ReactElement, { router: customRouter = router } = {}) => {
-  return render(<RouterProvider router={customRouter} />, {
-    wrapper: ({ children }) => <>{children}</>,
-  });
+export const renderWithProviders = (ui: ReactElement) => {
+  return render(<Provider store={store}>{ui}</Provider>);
 };
