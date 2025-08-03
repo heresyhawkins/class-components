@@ -47,8 +47,17 @@ body,
 .button-form,
 .pokemon-card,
 .pokemon-name,
-.details-content,
-.results-form h2 {
+.details-content {
   background: var(--bg);
+  color: var(--text);
+}
+
+.results-form h2,
+.pokemon-stat,
+.pokemon-stat strong,
+.pokemon-type,
+.pokemon-type strong,
+.pokemon-types,
+.pokemon-stats {
   color: var(--text);
 }
