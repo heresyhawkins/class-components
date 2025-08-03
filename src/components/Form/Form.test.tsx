@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { screen, fireEvent } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import Form from './Form';
 import { renderWithProviders } from '../../utils/test-utils';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
