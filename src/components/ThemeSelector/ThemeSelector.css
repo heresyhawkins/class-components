@@ -1,0 +1,14 @@
+.theme-selector {
+  padding: 16px;
+  background: #f0f0f0;
+  border-bottom: 1px solid #ddd;
+}
+
+.theme-selector label {
+  margin-right: 16px;
+  cursor: pointer;
+}
+
+.theme-selector input[type='radio'] {
+  margin-right: 4px;
+}

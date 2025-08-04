@@ -8,3 +8,4 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "All test is completed"
+

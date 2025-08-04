@@ -17,3 +17,47 @@ button {
 img {
   max-width: 100%;
 }
+
+.theme-light {
+  --bg: #fff;
+  --text: #333;
+  --border: #ddd;
+  --bg-secondary: #f9f9f9;
+}
+
+.theme-dark {
+  --bg: #1a1a1a;
+  --text: #fff;
+  --border: #444;
+  --bg-secondary: #2a2a2a;
+}
+
+body,
+#root,
+.home-layout,
+.form-action,
+.theme-selector {
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  transition: background 0.3s ease;
+  box-shadow: 0 4px 12px var(--border);
+}
+
+.button-form,
+.pokemon-card,
+.pokemon-name,
+.details-content {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.results-form h2,
+.pokemon-stat,
+.pokemon-stat strong,
+.pokemon-type,
+.pokemon-type strong,
+.pokemon-types,
+.pokemon-stats {
+  color: var(--text);
+}
