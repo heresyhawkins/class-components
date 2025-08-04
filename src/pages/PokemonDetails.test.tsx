@@ -1,22 +1,26 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { describe, it, expect, vi } from 'vitest';
-import PokemonDetails from './PokemonDetails';
+import { describe, it, expect, vi, Mock } from 'vitest';
 
 vi.mock('react-router-dom', () => ({
   useParams: vi.fn(),
   useNavigate: vi.fn(),
 }));
 
+const mockUseParams = useParams as Mock<typeof useParams>;
+const mockUseNavigate = useNavigate as Mock<typeof useNavigate>;
+
 const mockNavigate = vi.fn();
-(useNavigate as any).mockReturnValue(mockNavigate);
+mockUseNavigate.mockReturnValue(mockNavigate);
 
 const mockFetch = vi.fn();
 global.fetch = mockFetch;
 
+import PokemonDetails from './PokemonDetails';
+
 describe('PokemonDetails', () => {
   beforeEach(() => {
-    (useParams as any).mockReturnValue({ name: 'pikachu' });
+    mockUseParams.mockReturnValue({ name: 'pikachu' });
     mockNavigate.mockClear();
     mockFetch.mockClear();
   });
@@ -61,6 +65,7 @@ describe('PokemonDetails', () => {
 
     const typeElement = screen.getByText(/Type:/i);
     expect(typeElement.parentElement).toHaveTextContent('Type: electric');
+
     expect(screen.getByText(/HP:/i).parentElement).toHaveTextContent('HP: 35');
     expect(screen.getByText(/Weight:/i).parentElement).toHaveTextContent('Weight: 60');
     expect(screen.getByText(/Height:/i).parentElement).toHaveTextContent('Height: 4');
@@ -139,7 +144,9 @@ describe('PokemonDetails', () => {
     const backdrop = screen.getByText('pikachu').closest('.details-panel');
     expect(backdrop).toBeInTheDocument();
 
-    fireEvent.click(backdrop!);
+    if (backdrop) {
+      fireEvent.click(backdrop);
+    }
 
     expect(mockNavigate).toHaveBeenCalledWith(-1);
   });
@@ -166,7 +173,9 @@ describe('PokemonDetails', () => {
     });
 
     const content = screen.getByText('pikachu').closest('.details-content');
-    fireEvent.click(content!);
+    if (content) {
+      fireEvent.click(content);
+    }
 
     expect(mockNavigate).not.toHaveBeenCalled();
   });

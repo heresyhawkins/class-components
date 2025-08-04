@@ -1,6 +1,9 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach, Mock } from 'vitest';
 import { screen, render } from '@testing-library/react';
 import Flyout from './Flyout';
+import { useSelector, useDispatch } from 'react-redux';
+import type { TypedUseSelectorHook } from 'react-redux';
+import { AppDispatch, RootState } from '../../store';
 
 vi.mock('react-redux', async () => {
   const actual = await vi.importActual('react-redux');
@@ -11,14 +14,19 @@ vi.mock('react-redux', async () => {
   };
 });
 
-import { useSelector, useDispatch } from 'react-redux';
+const mockUseSelector = useSelector as unknown as Mock<
+  TypedUseSelectorHook<RootState>
+>;
+const mockUseDispatch = useDispatch as unknown as Mock<() => AppDispatch>;
 
 describe('Flyout', () => {
+  const mockDispatch = vi.fn();
+
   beforeEach(() => {
     vi.clearAllMocks();
 
-    (useSelector as any).mockReturnValue({ selectedPokemons: [] });
-    (useDispatch as any).mockReturnValue(vi.fn());
+    mockUseSelector.mockReturnValue({ selectedPokemons: [] });
+    mockUseDispatch.mockReturnValue(mockDispatch);
   });
 
   it('test1', () => {
@@ -28,7 +36,7 @@ describe('Flyout', () => {
   });
 
   it('test2', () => {
-    (useSelector as any).mockReturnValue({
+    mockUseSelector.mockReturnValue({
       selectedPokemons: [
         { name: 'bulbasaur', url: '', types: ['grass'], weight: 69, height: 7 },
         { name: 'charmander', url: '', types: ['fire'], weight: 85, height: 6 },
@@ -43,10 +51,7 @@ describe('Flyout', () => {
   });
 
   it('test3', () => {
-    const mockDispatch = vi.fn();
-    (useDispatch as any).mockReturnValue(mockDispatch);
-
-    (useSelector as any).mockReturnValue({
+    mockUseSelector.mockReturnValue({
       selectedPokemons: [{ name: 'pikachu', url: '', types: [], weight: 0, height: 0 }],
     });
 
@@ -55,10 +60,8 @@ describe('Flyout', () => {
     const button = screen.getByText('Unselect all');
     button.click();
 
-    expect(mockDispatch).toHaveBeenCalledOnce();
-    const action = mockDispatch.mock.calls[0][0];
+    expect(mockDispatch).toHaveBeenCalledTimes(1);
+    const action = mockDispatch.mock.calls[0]![0];
     expect(action.type).toBe('selectedPokemon/clearAll');
   });
-
-
 });

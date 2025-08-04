@@ -1,6 +1,6 @@
 import { RouterProvider } from 'react-router-dom';
 import { router } from './routes/AppRouter';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, Mock } from 'vitest';
 import { Provider } from 'react-redux';
 import { ThemeProvider } from './context/ThemeContext';
 import React from 'react';
@@ -20,7 +20,7 @@ describe('main.tsx', () => {
     const mockRender = vi.fn();
     const { createRoot } = await import('react-dom/client');
 
-    (createRoot as any).mockImplementation((container: any) => {
+    (createRoot as Mock).mockImplementation((container:  HTMLElement | null) => {
       if (!container) throw new Error('Container is null');
       return { render: mockRender };
     });
