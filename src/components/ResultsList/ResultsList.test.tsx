@@ -1,110 +1,83 @@
+
 import { describe, it, expect } from 'vitest';
 import { screen, fireEvent } from '@testing-library/react';
-import { Pokemon } from '../../types/PokemonTypes';
 import ResultsList from './ResultsList';
 import { renderWithProviders } from '../../utils/test-utils';
 
-
-const mockPokemons: Pokemon[] = [
+const mockPokemons = [
   {
-    id: 1,
     name: 'bulbasaur',
-    sprites: {
-      front_default: 'https://example.com/bulbasaur.png',
-      front_shiny: null,
-    },
-    types: [
-      { slot: 1, type: { name: 'grass', url: '' } },
-      { slot: 2, type: { name: 'poison', url: '' } },
-    ],
-    stats: [{ base_stat: 45, effort: 0, stat: { name: 'hp', url: '' } }],
-    base_experience: 0,
-    height: 0,
-    is_default: false,
-    order: 0,
-    weight: 0,
-    abilities: [],
-    forms: [],
-    game_indices: [],
-    held_items: [],
-    location_area_encounters: '',
-    moves: [],
-    past_types: [],
-    past_abilities: [],
-    cries: undefined,
-    species: undefined,
+    url: 'https://pokeapi.co/api/v2/pokemon/1/',
   },
   {
-    id: 2,
     name: 'charmander',
-    sprites: {
-      front_default: null,
-      front_shiny: null,
-    },
-    types: [{ slot: 1, type: { name: 'fire', url: '' } }],
-    stats: [{ base_stat: 39, effort: 0, stat: { name: 'hp', url: '' } }],
-    base_experience: 0,
-    height: 0,
-    is_default: false,
-    order: 0,
-    weight: 0,
-    abilities: [],
-    forms: [],
-    game_indices: [],
-    held_items: [],
-    location_area_encounters: '',
-    moves: [],
-    past_types: [],
-    past_abilities: [],
-    cries: undefined,
-    species: undefined,
+    url: 'https://pokeapi.co/api/v2/pokemon/4/',
   },
 ];
 
-describe('PokemonList', () => {
-  it('should render list of pokemons', () => {
+describe('ResultsList', () => {
+  it('should render list of pokemons with name, ID, and sprite', () => {
     renderWithProviders(<ResultsList pokemons={mockPokemons} />);
 
     expect(screen.getByText('bulbasaur')).toBeInTheDocument();
     expect(screen.getByText('charmander')).toBeInTheDocument();
 
-    expect(
-      screen.getByText((_content, element) => {
-        return element?.textContent === 'Types: grass, poison';
-      })
-    ).toBeInTheDocument();
+    expect(screen.getByText('#1')).toBeInTheDocument();
+    expect(screen.getByText('#4')).toBeInTheDocument();
 
-    expect(
-      screen.getByText((_content, element) => {
-        return element?.textContent === 'Types: fire';
-      })
-    ).toBeInTheDocument();
+    const bulbasaurImg = screen.getByAltText('bulbasaur');
+    expect(bulbasaurImg).toHaveAttribute(
+      'src',
+      'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png'
+    );
 
-    expect(
-      screen.getByText((_content, element) => {
-        return element?.textContent === 'HP: 45';
-      })
-    ).toBeInTheDocument();
+    const charmanderImg = screen.getByAltText('charmander');
+    expect(charmanderImg).toHaveAttribute(
+      'src',
+      'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png'
+    );
 
-    expect(
-      screen.getByText((_content, element) => {
-        return element?.textContent === 'HP: 39';
-      })
-    ).toBeInTheDocument();
+    expect(screen.getByText('Click for details')).toBeInTheDocument();
   });
 
   it('should show "No Pokémon found" when pokemons array is empty', () => {
-    renderWithProviders(<ResultsList pokemons={[]} />); 
+    renderWithProviders(<ResultsList pokemons={[]} />);
 
-    expect(screen.getByText(/No Pokémon found/i)).toBeInTheDocument();
+    expect(screen.getByText('No Pokémon found.')).toBeInTheDocument();
   });
 
-  it('should render placeholder image when sprite is null', () => {
-    renderWithProviders(<ResultsList pokemons={mockPokemons} />); 
+  it('should show placeholder image when original sprite fails to load', () => {
+    renderWithProviders(<ResultsList pokemons={mockPokemons} />);
 
-    const image = screen.getByAltText('charmander');
-    fireEvent.error(image);
+    const charmanderImg = screen.getByAltText('charmander');
 
-    expect(image).toHaveAttribute('src', expect.stringContaining('via.placeholder.com'));
+    fireEvent.error(charmanderImg);
+
+    expect(charmanderImg).toHaveAttribute('src', expect.stringContaining('via.placeholder.com'));
+  });
+
+  it('should call onPokemonClick when clicking on a pokemon card', () => {
+    const mockOnPokemonClick = vi.fn();
+    renderWithProviders(<ResultsList pokemons={mockPokemons} onPokemonClick={mockOnPokemonClick} />);
+
+    const cardContent = screen.getByText('bulbasaur').closest('.pokemon-card-content');
+    expect(cardContent).toBeInTheDocument();
+
+    fireEvent.click(cardContent!);
+
+    expect(mockOnPokemonClick).toHaveBeenCalledWith('bulbasaur');
+  });
+
+  it('should toggle checkbox when clicked', () => {
+    renderWithProviders(<ResultsList pokemons={mockPokemons} />);
+
+    const checkbox = screen.getByLabelText(''); 
+    expect(checkbox).not.toBeChecked();
+
+    fireEvent.click(checkbox);
+    expect(checkbox).toBeChecked();
+
+    fireEvent.click(checkbox);
+    expect(checkbox).not.toBeChecked();
   });
 });
