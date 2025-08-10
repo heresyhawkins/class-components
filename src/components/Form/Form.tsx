@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { SearchInput } from '../SearchInput/SearchInput';
 import { SearchButton } from '../SearchButton/SearchButton';
 import './Form.css';
-import { Pokemon, APIResourceList, NamedAPIResource } from '../../types/PokemonTypes';
+import { NamedAPIResource } from '../../types/PokemonTypes';
 import PokemonList from '../ResultsList/ResultsList';
 import PaginationControls from '../PaginationControls/PaginationControls';
 import { Link } from 'react-router-dom';
 import { useSearchFromLocalStorage } from '../../hooks/useSearchFromLocalStorage';
+import { useGetPokemonListQuery } from '../../store/pokemonApiSlice';
 
 const POKEMON_LIMIT_PER_PAGE = 20;
 const DEFAULT_PAGE = 1;
 const MIN_PAGE = 1;
-const BASE_POKEMON_URL = 'https://pokeapi.co/api/v2/pokemon';
 
 const calculateOffset = (page: number): number => (page - 1) * POKEMON_LIMIT_PER_PAGE;
 const calculatePage = (offset: number): number => Math.floor(offset / POKEMON_LIMIT_PER_PAGE) + 1;
@@ -27,100 +27,44 @@ export default function Form() {
   const initialPage = isNaN(urlPage) || urlPage < MIN_PAGE ? MIN_PAGE : urlPage;
   const initialOffset = calculateOffset(initialPage);
 
-  const [state, setState] = useState<{
-    data: Pokemon[];
-    loading: boolean;
-    error: string | null;
-    filteredResults: Pokemon[];
-    pagination: {
-      offset: number;
-      limit: number;
-      total: number | null;
-    };
-  }>({
-    data: [],
-    loading: true,
-    error: null,
-    filteredResults: [],
-    pagination: {
-      offset: initialOffset,
-      limit: POKEMON_LIMIT_PER_PAGE,
-      total: null,
-    },
-  });
+  const [offset, setOffset] = useState(initialOffset);
 
-  const fetchData = async (
-    offset = 0,
-    limit = POKEMON_LIMIT_PER_PAGE,
-    currentSearchTerm = searchTerm
-  ) => {
-    try {
-      setState((prev) => ({ ...prev, loading: true }));
-
-      const url = `${BASE_POKEMON_URL}?offset=${offset}&limit=${limit}`;
-      const response = await fetch(url);
-
-      if (!response.ok) throw new Error('Failed to load Pokémon data');
-
-      const result = (await response.json()) as APIResourceList<NamedAPIResource>;
-
-      const pokemonPromises = result.results.map(async (item) => {
-        const res = await fetch(item.url);
-        return res.json() as Promise<Pokemon>;
-      });
-
-      const pokemonData = await Promise.all(pokemonPromises);
-
-      const filtered = currentSearchTerm
-        ? pokemonData.filter((p) =>
-            p.name.toLowerCase().includes(currentSearchTerm.trim().toLowerCase())
-          )
-        : pokemonData;
-
-      setState((prev) => ({
-        ...prev,
-        pokemonData,
-        filteredResults: filtered,
-        pagination: { ...prev.pagination, total: result.count },
-        error: null,
-        loading: false,
-      }));
-    } catch (err) {
-      console.error(err);
-      setState((prev) => ({
-        ...prev,
-        error: 'Failed to load Pokémon data.',
-        loading: false,
-      }));
-    }
-  };
-
-  useEffect(() => {
-    void fetchData(state.pagination.offset, POKEMON_LIMIT_PER_PAGE, searchTerm);
-  }, [state.pagination.offset, searchTerm]);
-
-  useEffect(() => {
-    const currentPage = calculatePage(state.pagination.offset);
-    const params = new URLSearchParams();
-
-    if (searchTerm) params.set('search', searchTerm);
-    params.set('page', String(currentPage));
-
-    setSearchParams(params, { replace: true });
-  }, [state.pagination.offset, searchTerm, setSearchParams]);
+  const {
+    data: pokemonListData,
+    error,
+    isLoading,
+    refetch,
+  } = useGetPokemonListQuery({ offset, limit: POKEMON_LIMIT_PER_PAGE });
 
   useEffect(() => {
     const page = parseInt(searchParams.get('page') ?? '1', 10);
     const validPage = isNaN(page) || page < MIN_PAGE ? MIN_PAGE : page;
-    const offset = calculateOffset(validPage);
-
-    if (offset !== state.pagination.offset) {
-      setState((prev) => ({
-        ...prev,
-        pagination: { ...prev.pagination, offset },
-      }));
+    const newOffset = calculateOffset(validPage);
+    if (newOffset !== offset) {
+      setOffset(newOffset);
     }
   }, [searchParams]);
+
+  const [filteredResults, setFilteredResults] = useState<NamedAPIResource[]>([]);
+
+  useEffect(() => {
+    if (pokemonListData?.results) {
+      const filtered = searchTerm
+        ? pokemonListData.results.filter((p) =>
+            p.name.toLowerCase().includes(searchTerm.trim().toLowerCase())
+          )
+        : pokemonListData.results;
+      setFilteredResults(filtered);
+    }
+  }, [pokemonListData, searchTerm]);
+
+  useEffect(() => {
+    const currentPage = calculatePage(offset);
+    const params = new URLSearchParams();
+    if (searchTerm) params.set('search', searchTerm);
+    params.set('page', String(currentPage));
+    setSearchParams(params, { replace: true });
+  }, [offset, searchTerm, setSearchParams]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -128,42 +72,29 @@ export default function Form() {
 
   const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const currentPage = calculatePage(state.pagination.offset);
+    const currentPage = calculatePage(offset);
     const params = new URLSearchParams();
-
     if (searchTerm) params.set('search', searchTerm);
     params.set('page', String(currentPage));
-
-    void fetchData(state.pagination.offset, POKEMON_LIMIT_PER_PAGE, searchTerm);
     void navigate(`/page/${currentPage}?${params.toString()}`);
   };
 
   const handlePageChange = (newOffset: number) => {
     const newPage = calculatePage(newOffset);
     const params = new URLSearchParams();
-
     if (searchTerm) params.set('search', searchTerm);
     params.set('page', String(newPage));
-
     void navigate(`/page/${newPage}?${params.toString()}`);
-
-    setState((prev) => ({
-      ...prev,
-      pagination: { ...prev.pagination, offset: newOffset },
-    }));
+    setOffset(newOffset);
   };
 
   const handlePokemonClick = (name: string) => {
-    const currentPage = calculatePage(state.pagination.offset);
+    const currentPage = calculatePage(offset);
     const params = new URLSearchParams();
-
     if (searchTerm) params.set('search', searchTerm);
     params.set('page', String(currentPage));
-
     void navigate(`/page/${currentPage}/pokemon/${name}`);
   };
-
-  const { loading, error, filteredResults } = state;
 
   return (
     <form className="form-action" onSubmit={handleSearch}>
@@ -174,6 +105,9 @@ export default function Form() {
           onChange={handleInputChange}
         />
         <SearchButton textContent="Search" />
+        <button type="button" onClick={() => void refetch()} className="refresh-button">
+          Refresh
+        </button>
       </div>
 
       <div className="results-form">
@@ -182,16 +116,23 @@ export default function Form() {
           About Us
         </Link>
 
-        {loading ? (
+        {isLoading ? (
           <p>Loading...</p>
         ) : error ? (
           <div className="error-box">
-            <p>{error}</p>
+            <p>Failed to load Pokémon data.</p>
           </div>
         ) : filteredResults.length > 0 ? (
           <>
             <PokemonList pokemons={filteredResults} onPokemonClick={handlePokemonClick} />
-            <PaginationControls pagination={state.pagination} onPageChange={handlePageChange} />
+            <PaginationControls
+              pagination={{
+                offset,
+                limit: POKEMON_LIMIT_PER_PAGE,
+                total: pokemonListData?.count ?? null,
+              }}
+              onPageChange={handlePageChange}
+            />
           </>
         ) : (
           <div className="no-results">
