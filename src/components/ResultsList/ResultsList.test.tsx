@@ -1,4 +1,3 @@
-
 import { describe, it, expect } from 'vitest';
 import { screen, fireEvent } from '@testing-library/react';
 import ResultsList from './ResultsList';
@@ -37,7 +36,8 @@ describe('ResultsList', () => {
       'https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/4.png'
     );
 
-    expect(screen.getByText('Click for details')).toBeInTheDocument();
+    const detailTexts = screen.getAllByText('Click for details');
+    expect(detailTexts).toHaveLength(2);
   });
 
   it('should show "No Pokémon found" when pokemons array is empty', () => {
@@ -60,10 +60,8 @@ describe('ResultsList', () => {
     const mockOnPokemonClick = vi.fn();
     renderWithProviders(<ResultsList pokemons={mockPokemons} onPokemonClick={mockOnPokemonClick} />);
 
-    const cardContent = screen.getByText('bulbasaur').closest('.pokemon-card-content');
-    expect(cardContent).toBeInTheDocument();
-
-    fireEvent.click(cardContent!);
+    const bulbasaurCard = screen.getByText('bulbasaur').closest('.pokemon-card-content');
+    fireEvent.click(bulbasaurCard!);
 
     expect(mockOnPokemonClick).toHaveBeenCalledWith('bulbasaur');
   });
@@ -71,13 +69,16 @@ describe('ResultsList', () => {
   it('should toggle checkbox when clicked', () => {
     renderWithProviders(<ResultsList pokemons={mockPokemons} />);
 
-    const checkbox = screen.getByLabelText(''); 
-    expect(checkbox).not.toBeChecked();
+    const checkboxes = screen.getAllByRole('checkbox');
+    expect(checkboxes).toHaveLength(2);
 
-    fireEvent.click(checkbox);
-    expect(checkbox).toBeChecked();
+    const bulbasaurCheckbox = checkboxes[0];
+    expect(bulbasaurCheckbox).not.toBeChecked();
 
-    fireEvent.click(checkbox);
-    expect(checkbox).not.toBeChecked();
+    fireEvent.click(bulbasaurCheckbox);
+    expect(bulbasaurCheckbox).toBeChecked();
+
+    fireEvent.click(bulbasaurCheckbox);
+    expect(bulbasaurCheckbox).not.toBeChecked();
   });
 });
