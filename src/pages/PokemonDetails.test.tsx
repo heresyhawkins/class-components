@@ -13,15 +13,6 @@ vi.mock('react-router-dom', () => ({
 const mockUseParams = vi.mocked(useParams);
 const mockUseNavigate = vi.mocked(useNavigate);
 
-const mockPokemon = {
-  name: 'pikachu',
-  sprites: { front_default: 'https://example.com/pikachu.png' },
-  types: [{ type: { name: 'electric' } }],
-  stats: [{ base_stat: 35 }],
-  weight: 60,
-  height: 4,
-};
-
 describe('PokemonDetails', () => {
   const mockNavigate = vi.fn();
   const mockName = 'pikachu';
