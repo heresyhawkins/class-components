@@ -5,15 +5,16 @@ import { store } from '../store';
 
 export const renderWithProviders = (
   ui: ReactElement,
-  p0: {
-    preloadedState: {
-      pokemonApi: {
-        queries: {
-          'getPokemonByName(pikachu)': { status: string; data: undefined; error: undefined };
-        };
+  {
+    preloadedState,
+  }: {
+    preloadedState?: {
+      pokemonApi?: {
+        queries: Record<string, { status: string; data: unknown; error: unknown }>;
       };
     };
-  }
+  } = {}
 ) => {
   return render(<Provider store={store}>{ui}</Provider>);
+  console.log(preloadedState);
 };
