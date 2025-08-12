@@ -1,39 +1,32 @@
-import './PokemonDetails.scss';
-import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Pokemon } from '../types/PokemonTypes';
+import { useGetPokemonByNameQuery } from '../store/pokemonApiSlice';
+import { FetchBaseQueryError } from '@reduxjs/toolkit/query';
+import { SerializedError } from '@reduxjs/toolkit';
+import './PokemonDetails.scss';
+
+function isFetchBaseQueryError(error: unknown): error is FetchBaseQueryError {
+  return typeof error === 'object' && error != null && 'status' in error;
+}
+
+function isSerializedError(error: unknown): error is SerializedError {
+  return typeof error === 'object' && error != null && 'message' in error;
+}
 
 export default function PokemonDetails() {
   const { name } = useParams<{ name: string }>();
   const navigate = useNavigate();
-  const [pokemon, setPokemon] = useState<Pokemon | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+
+  const { data: pokemon, error, isLoading } = useGetPokemonByNameQuery(name!, { skip: !name });
 
   const close = () => void navigate(-1);
 
-  useEffect(() => {
-    if (!name) return;
+  let errorMessage = 'Failed to load Pokémon';
 
-    setPokemon(null);
-    setError(null);
-    setLoading(true);
-
-    fetch(`https://pokeapi.co/api/v2/pokemon/${name.toLowerCase()}`)
-      .then((res) => {
-        if (!res.ok) throw new Error('Pokémon not found');
-        return res.json();
-      })
-      .then((data: Pokemon) => {
-        setPokemon(data);
-        setLoading(false);
-      })
-      .catch((err: unknown) => {
-        console.error('Failed to fetch Pokémon:', err);
-        setError((err as Error).message);
-        setLoading(false);
-      });
-  }, [name]);
+  if (isFetchBaseQueryError(error)) {
+    errorMessage = `Error: ${error.status}`;
+  } else if (isSerializedError(error)) {
+    errorMessage = error.message ?? errorMessage;
+  }
 
   return (
     <div className="details-panel" onClick={close}>
@@ -42,11 +35,9 @@ export default function PokemonDetails() {
           Close
         </button>
 
-        {error ? (
-          <p>Error: {error}</p>
-        ) : loading ? (
-          <p>Loading...</p>
-        ) : pokemon ? (
+        {error && <p>{errorMessage}</p>}
+        {isLoading && <p>Loading...</p>}
+        {pokemon && (
           <div>
             <img
               src={pokemon.sprites?.front_default ?? undefined}
@@ -70,7 +61,7 @@ export default function PokemonDetails() {
               <strong>Height:</strong> {pokemon.height}
             </div>
           </div>
-        ) : null}
+        )}
       </div>
     </div>
   );
