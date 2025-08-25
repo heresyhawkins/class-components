@@ -1,14 +1,13 @@
 import { useState } from 'react';
 import { useAppSelector } from '../store/hooks';
 import Modal from '../components/Modal/Modal';
-import HookForm from '../components/forms/HookForm';
-
 import Form from '../components/Form';
 import Flyout from '../components/Flyout/Flyout';
 import ThemeSelector from '../components/ThemeSelector/ThemeSelector';
 import './Home.scss';
-import ControlledForm from '../components/forms/HookForm';
+import ControlledForm from '../components/forms/ControlledForm';
 import { Outlet } from 'react-router-dom';
+import UncontrolledForm from '../components/forms/UncontrolledForm';
 
 export default function Home() {
   const [modal, setModal] = useState<'hook' | 'uncontrolled' | 'controlled' | null>(null);
@@ -47,8 +46,8 @@ export default function Home() {
       <Outlet />
       <Flyout />
 
-      <Modal isOpen={modal === 'hook'} onClose={() => setModal(null)}>
-        <HookForm onClose={() => setModal(null)} />
+      <Modal isOpen={modal === 'uncontrolled'} onClose={() => setModal(null)}>
+        <UncontrolledForm onClose={() => setModal(null)} />
       </Modal>
 
       <Modal isOpen={modal === 'controlled'} onClose={() => setModal(null)}>

@@ -3,7 +3,12 @@ import * as yup from 'yup';
 import { useAppDispatch } from '../../store/hooks';
 import { addEntry } from '../../store/formSlice';
 import { useAppSelector } from '../../store/hooks';
-import { Input, Checkbox, GenderPicker, Button } from '../../components/Inputs';
+import { Input, Checkbox, GenderPicker, Button } from '../Inputs';
+
+const ONE_KB = 1024;
+const MAX_MB = 5;
+const MAX_FILE_SIZE_BYTES = MAX_MB * ONE_KB * ONE_KB;
+const MIN_PASSWORD_LENGTH = 8;
 
 interface FormData {
   name: string;
@@ -19,7 +24,7 @@ interface FormData {
 
 type Errors = Partial<Record<keyof FormData, string>>;
 
-const schema: yup.ObjectSchema<FormData> = yup
+const schema = yup
   .object({
     name: yup
       .string()
@@ -35,7 +40,7 @@ const schema: yup.ObjectSchema<FormData> = yup
     password: yup
       .string()
       .required('Password is required')
-      .min(8, 'Password must be at least 8 characters')
+      .min(MIN_PASSWORD_LENGTH, `Password must be at least ${MIN_PASSWORD_LENGTH} characters`)
       .matches(/[a-z]/, 'Password must contain a lowercase letter')
       .matches(/[A-Z]/, 'Password must contain an uppercase letter')
       .matches(/[0-9]/, 'Password must contain a number')
@@ -44,7 +49,10 @@ const schema: yup.ObjectSchema<FormData> = yup
       .string()
       .oneOf([yup.ref('password')], 'Passwords must match')
       .required('Confirm password'),
-    gender: yup.mixed<'male' | 'female'>().oneOf(['male', 'female']).required('Gender is required'),
+    gender: yup
+      .mixed<'male' | 'female'>()
+      .oneOf(['male', 'female'], 'Gender is required')
+      .required('Gender is required'),
     acceptTerms: yup.boolean().oneOf([true], 'Accept T&C').required('Accept T&C'),
     country: yup.string().required('Country is required'),
     photo: yup
@@ -54,12 +62,12 @@ const schema: yup.ObjectSchema<FormData> = yup
         if (!value) return true;
         return ['image/png', 'image/jpeg'].includes(value.type);
       })
-      .test('fileSize', 'Max 5MB', (value) => {
+      .test('fileSize', `Max ${MAX_FILE_SIZE_BYTES / ONE_KB / ONE_KB}MB`, (value) => {
         if (!value) return true;
-        return value.size <= 5 * 1024 * 1024;
+        return value.size <= MAX_FILE_SIZE_BYTES;
       }),
   })
-  .defined();
+  .defined() as yup.ObjectSchema<FormData>;
 
 export default function UncontrolledForm({ onClose }: { onClose: () => void }) {
   const dispatch = useAppDispatch();
@@ -129,6 +137,15 @@ export default function UncontrolledForm({ onClose }: { onClose: () => void }) {
     }
   };
 
+  const handleGenderChange = (value: 'male' | 'female') => {
+    const inputs = formRef.current?.querySelectorAll('input[name="gender"]');
+    inputs?.forEach((input) => {
+      if (input instanceof HTMLInputElement) {
+        input.checked = input.value === value;
+      }
+    });
+  };
+
   return (
     <form ref={formRef} onSubmit={validateAndSubmit} className="space-y-4">
       <h2 className="font-bold text-xl">Uncontrolled Form</h2>
@@ -166,15 +183,7 @@ export default function UncontrolledForm({ onClose }: { onClose: () => void }) {
         {errors.country && <p className="error">{errors.country}</p>}
       </div>
 
-      <GenderPicker
-        value=""
-        onChange={(value) => {
-          const inputs = formRef.current?.querySelectorAll('input[name="gender"]');
-          inputs?.forEach((input) => {
-            input.checked = input.value === value;
-          });
-        }}
-      />
+      <GenderPicker value="" onChange={handleGenderChange} />
       {errors.gender && <p className="error">{errors.gender}</p>}
 
       <div className="px-3">
