@@ -9,12 +9,16 @@
 }
 
 .modal-content {
-  background: var(--bg);
-  color: var(--text);
+  background: white;
+  color: black;
   padding: 24px;
   border-radius: 8px;
   width: 100%;
   max-width: 500px;
   outline: none;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.error {
+  color: red;
 }
