@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-redundant-type-constituents */
-import { CountryData, YearlyData } from '../types';
+import { CountryData, DisplayValue, YearlyData } from '../types';
 
 export function getLatestPopulation(data: CountryData): number | 'N/A' {
   const sorted = [...data].sort((a, b) => (b.year ?? 0) - (a.year ?? 0));
@@ -11,7 +10,7 @@ export function getCountryInfo(
   data: CountryData
 ): {
   name: string;
-  iso_code: string | 'N/A';
+  iso_code: DisplayValue<string>;
   population: number | 'N/A';
 } {
   if (!data || data.length === 0) {

@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { CountryData, DataValue } from '../types';
+import { CountryData, DataValueTable } from '../types';
 
 interface Props {
   data: CountryData;
@@ -41,7 +41,7 @@ const DataTable = React.memo(function DataTable({ data, year, selectedColumns }:
         {rows.map((row, idx) => (
           <tr key={idx} className={row.year === year ? 'highlighted-row' : ''}>
             {columns.map((col) => {
-              const value = (row as unknown as Record<string, DataValue>)[col];
+              const value = (row as unknown as Record<string, DataValueTable>)[col];
               return (
                 <td key={col}>
                   {value != null ? (typeof value === 'number' ? value.toFixed(3) : value) : 'N/A'}

@@ -1,5 +1,7 @@
 export type DataValue = number | string | null | undefined | YearlyData[];
 
+export type DataValueTable = number | string | null | undefined;
+
 export interface YearlyData {
   year?: number;
   population?: number;
@@ -19,7 +21,7 @@ export interface YearlyData {
 
 export type CountryData = YearlyData[];
 
-export type DisplayValue<T = number> = T | 'N/A';
+export type DisplayValue<T = number | string> = T | 'N/A';
 
 export type DataColumn =
   | 'co2'
